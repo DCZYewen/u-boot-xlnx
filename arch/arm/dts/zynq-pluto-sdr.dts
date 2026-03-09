@@ -61,7 +61,7 @@
 		};
 		partition@qspi-linux {
 			label = "qspi-linux";
-			reg = <0x200000 0x1E00000>; /* 30M */
+			reg = <0x200000 0xE00000>; /*14M */
 		};
 	};
 };
@@ -75,3 +75,20 @@
 	dr_mode = "host";
 	usb-phy = <&usb_phy0>;
 };
+
+&sdhci0 {
+	u-boot,dm-pre-reloc;
+	status = "okay";	
+};
+
+&gem0 {
+	status = "okay";
+	phy-mode = "rgmii-id";
+	phy-handle = <&ethernet_phy0>;
+
+	ethernet_phy0: ethernet-phy@0 {
+		reg = <0>;
+	};
+};
+
+

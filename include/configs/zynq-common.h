@@ -78,7 +78,7 @@
 "dfu_sf_info="\
 "set dfu_alt_info " \
 "boot.dfu raw 0x0 0x100000\\\\;" \
-"firmware.dfu raw 0x200000 0x1E00000\\\\;" \
+"firmware.dfu raw 0x200000 0x0E00000\\\\;" \
 "uboot-extra-env.dfu raw 0xFF000 0x1000\\\\;" \
 "uboot-env.dfu raw 0x100000 0x20000\\\\;" \
 "spare.dfu raw 0x120000 0xE0000\0" \
@@ -127,7 +127,7 @@
 	"dfu_ram_info=" \
 	"set dfu_alt_info " \
 	"dummy.dfu ram 0 0\\\\;" \
-	"firmware.dfu ram ${fit_load_address} 0x1E00000\0" \
+	"firmware.dfu ram ${fit_load_address} 0xE00000\0" \
 	"dfu_ram=echo Entering DFU RAM mode ... && run dfu_ram_info && dfu 0 ram 0\0" \
 	"thor_ram=run dfu_ram_info && thordown 0 ram 0\0"
 
@@ -269,7 +269,7 @@
 			"fi; " \
 		"fi; \0" \
 	"refclk_source=internal\0" \
-	"mode=1r1t\0" \
+	"mode=2r2t\0" \
 	"adi_loadvals_pluto=if test -n \"${ad936x_ext_refclk}\" && test ! -n \"${ad936x_skip_ext_refclk}\"; then " \
 			"fdt set /clocks/clock@0 clock-frequency ${ad936x_ext_refclk}; " \
 		"fi; " \
@@ -327,7 +327,7 @@
 	"read_sf=sf probe 0:0 50000000 0 && run qspiboot_extraenv &&" \
 		"sf read ${fit_load_address} 0x200000 ${fit_size} && " \
 		"iminfo ${fit_load_address} || " \
-		"sf read ${fit_load_address} 0x200000  0x1E00000; \0" \
+		"sf read ${fit_load_address} 0x200000  0xE00000; \0" \
 	"ramboot_verbose=adi_hwref;echo Copying Linux from DFU to RAM... && " \
 		"run dfu_ram;" \
 		"if run adi_loadvals; then " \
@@ -342,7 +342,7 @@
 		"fi; " \
 		"envversion;setenv bootargs console=ttyPS0,115200 maxcpus=${maxcpus} rootfstype=ramfs root=/dev/ram0 rw earlyprintk clk_ignore_unused uboot=\"${uboot-version}\" && " \
 		"bootm ${fit_load_address}#${fit_config} || echo BOOT failed entering DFU mode ... && run dfu_sf \0" \
-	"qspiboot=set stdout nulldev;adi_hwref;test -n $PlutoRevA || gpio input 14 && set stdout serial@e0001000 && sf probe && sf protect lock 0 100000 && run dfu_sf;  " \
+	"qspiboot=set stdout nulldev;adi_hwref;test -n $PlutoRevA || gpio input 10 && set stdout serial@e0001000 && sf probe && sf protect lock 0 100000 && run dfu_sf;  " \
 		"set stdout serial@e0001000;" \
 		"itest *f8000258 == 480003 && run clear_reset_cause && run dfu_sf; " \
 		"itest *f8000258 == 480007 && run clear_reset_cause && run ramboot_verbose; " \
@@ -361,6 +361,14 @@
 		"if test -n $uenvcmd; then " \
 			"echo Running uenvcmd ...; " \
 			"run uenvcmd; " \
+		"fi\0" \
+	"sdboot=if mmcinfo; then " \
+			"run uenvboot; " \
+			"echo Copying Linux from SD to RAM... && " \
+			"load mmc 0 ${fit_load_address} ${kernel_image} && " \
+			"load mmc 0 ${devicetree_load_address} ${devicetree_image} && " \
+			"load mmc 0 ${ramdisk_load_address} ${ramdisk_image} && " \
+			"bootm ${fit_load_address} ${ramdisk_load_address} ${devicetree_load_address}; " \
 		"fi\0" \
 	"usbboot=if usb start; then " \
 			"run uenvboot; " \
