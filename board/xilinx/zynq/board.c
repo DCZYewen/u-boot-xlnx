@@ -119,9 +119,11 @@ int misc_init_r(void)
 	gpio_request(BUTTON_GPIO, "SWITCH");
 	gpio_direction_input(BUTTON_GPIO);
 
-	if (!gpio_get_value(BUTTON_GPIO))
-		set_default_env("Button pressed: Using default environment\n");
-
+	if (!gpio_get_value(BUTTON_GPIO)) {
+		printf("DFU button pressed\n");
+		setenv("bootcmd", "run dfu_sf");
+	}
+	
 	return 0;
 }
 #endif
